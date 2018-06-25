@@ -6,13 +6,17 @@ const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rates_tracker`;
 let dbObj;
+let dbCtrl;
 
-let checkDbReady = () => !!dbObj;
+let checkDbReady = () => {
+    if (!dbObj) logger.warn('DB is not ready yet!');
+    return !!dbObj;
+};
 
 let insertRecord = (o) => {
     return !checkDbReady() || dbObj.collection('records').insertOne(o, (err) => {
         if (err) {
-            logger.error(`Failed inserting new data ${JSON.stringify(o)}`);
+            logger.error(`Failed inserting new data ${JSON.stringify(o)}: ${err}`);
         } else {
             logger.info(`New data ${JSON.stringify(o)} inserted`);
         }
@@ -25,24 +29,26 @@ let findLast = (cb) => {
 };
 let saveUserChat = (chatId, cb) => {
     if (!checkDbReady()) return;
-    let exists = dbObj.collection('chats').find({chatId});
-    if (exists) {
-        let text = `Chat ${chatId} record already exists. Ignoring..`;
-        logger.debug(text);
-        cb(false, text);
-    } else {
-        dbObj.collection('chats').insertOne({chatId}, (err) => {
-            if (err) {
-                let text = `Failed inserting chat ${chatId} record`;
-                logger.error(text);
-                cb(false, text);
-            } else {
-                let text = `Chat ${chatId} record inserted`;
-                logger.info(text);
-                cb(true, text);
-            }
-        });
-    }
+    dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
+        if (itemsCount > 0) {
+            let text = `Chat ${chatId} record already exists. Ignoring..`;
+            logger.debug(text);
+            cb(false, text);
+        } else {
+            dbObj.collection('chats').insertOne({chatId}, (err) => {
+                if (err) {
+                    let text = `Failed inserting chat ${chatId} record`;
+                    logger.error(text + ': ' + err);
+                    cb(false, text);
+                } else {
+                    let text = `Chat ${chatId} record inserted`;
+                    logger.info(text);
+                    cb(true, text);
+                }
+            });
+        }
+    });
+
 };
 let getUserChats = (cb) => {
     return !checkDbReady() || dbObj.collection('chats').find().toArray((err, arr) => {
@@ -53,7 +59,7 @@ let getUserChats = (cb) => {
 let removeUserChat = (chatId, cb) => {
     return !checkDbReady() || dbObj.collection('chats').remove({chatId}, (err) => {
         if (err) {
-            logger.error(`Failed removing chat ${chatId} record`);
+            logger.error(`Failed removing chat ${chatId} record: ${err}`);
             cb(false);
         } else {
             logger.info(`Chat ${chatId} record removed`);
@@ -62,14 +68,17 @@ let removeUserChat = (chatId, cb) => {
     });
 };
 
+let closeDb = (cb) => dbCtrl.close(cb);
+
 module.exports = {
-    checkDbReady, insertRecord, findLast, saveUserChat, getUserChats, removeUserChat
+    checkDbReady, insertRecord, findLast, saveUserChat, getUserChats, removeUserChat, closeDb
 };
 
 mongoDb.MongoClient.connect(url, (err, _database) => {
     if (err) {
         return logger.error(err);
     }
+    dbCtrl = _database;
     dbObj = _database.db('exchange_rates_tracker');
     logger.info('Connected to database "exchange_rates_tracker"');
 

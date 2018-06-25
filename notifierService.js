@@ -86,9 +86,8 @@ let checkForUpdates = (cb) => {
                 }
 
                 try {
-                    dbService.insertRecord(newRecord).then(() => {
-                        logger.info(`Exchange rates changed! Inserted new record ${JSON.stringify(newRecord)}`);
-                    });
+                    dbService.insertRecord(newRecord);
+                    logger.info(`Exchange rates changed! Inserted new record ${JSON.stringify(newRecord)}`);
                     return cb({
                         data: newRecord,
                         changed: true

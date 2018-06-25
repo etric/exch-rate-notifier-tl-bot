@@ -3,16 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./index",
-    "dev": "nodemon ./index"
+    "start": "node ./index"
   },
   "dependencies": {
-    "log4js": "^2.9.0",
     "node-html-parser": "^1.1.6",
     "telegraf": "^3.21.2",
-    "telegraf-session-local": "0.0.5"
+    "mongodb": "^3.0.10"
   },
-  "devDependencies": {
-    "nodemon": "^1.17.5"
-  }
+  "devDependencies": {}
 }

@@ -23,27 +23,27 @@ let insertRecord = (o) => {
     });
 };
 let findLast = (cb) => {
-    return !checkDbReady() || dbObj.collection('records').find().sort({'_id': -1}).toArray((err, arr) => {
+    return !checkDbReady() || dbObj.collection('records').find().sort({'_id': -1}).limit(1).toArray((err, arr) => {
         return cb(err, arr[0]);
     });
 };
 let saveUserChat = (chatId, cb) => {
     if (!checkDbReady()) return;
-    dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
+    return dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
         if (itemsCount > 0) {
             let text = `Chat ${chatId} record already exists. Ignoring..`;
             logger.debug(text);
-            cb(false, text);
+            return cb(false, text);
         } else {
-            dbObj.collection('chats').insertOne({chatId}, (err) => {
+            return dbObj.collection('chats').insertOne({chatId}, (err) => {
                 if (err) {
                     let text = `Failed inserting chat ${chatId} record`;
                     logger.error(text + ': ' + err);
-                    cb(false, text);
+                    return cb(false, text);
                 } else {
                     let text = `Chat ${chatId} record inserted`;
                     logger.info(text);
-                    cb(true, text);
+                    return cb(true, text);
                 }
             });
         }
@@ -60,10 +60,10 @@ let removeUserChat = (chatId, cb) => {
     return !checkDbReady() || dbObj.collection('chats').remove({chatId}, (err) => {
         if (err) {
             logger.error(`Failed removing chat ${chatId} record: ${err}`);
-            cb(false);
+            return cb(`Chat ${chatId} is NOT un-subscribed from updates.`, false);
         } else {
             logger.info(`Chat ${chatId} record removed`);
-            cb(true);
+            return cb(`Chat ${chatId} un-subscribed from updates!`, true);
         }
     });
 };

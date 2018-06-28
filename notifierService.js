@@ -4,6 +4,7 @@ const parse = require('node-html-parser').parse;
 const https = require('https');
 const dbService = require('./dbService');
 const logger = require('./logService');
+const utils = require('./utils');
 
 let parseExchangeRates = (html) => {
     const root = parse(html);
@@ -41,25 +42,6 @@ let parseExchangeRates = (html) => {
     };
 };
 
-let isDataEqual = (oldObj, newObj) => {
-    if (!oldObj)
-        return false;
-    if (!newObj) {
-        console.error('New object is null/empty. Skipping update');
-        return true;
-    }
-
-    // logger.debug('Comparing\n' + JSON.stringify(oldObj) + '\nand\n' + JSON.stringify(newObj) + '\n');
-
-    if (oldObj.usd.sell !== newObj.usd.sell)
-        return false;
-    if (oldObj.usd.buy !== newObj.usd.buy)
-        return false;
-
-    return true;
-};
-
-// cb = function(data)
 let checkForUpdates = (cb) => {
     return https.get('https://finance.ua/ru/', (res) => {
         let fullHtml = '';
@@ -67,38 +49,29 @@ let checkForUpdates = (cb) => {
         res.on('end', () => {
             let newRecord = parseExchangeRates(fullHtml);
 
+            if (!utils.isValidRecord(newRecord)) {
+                return cb({ error: `New Record ${JSON.stringify(newRecord)} is invalid` });
+            }
+
             return dbService.findLast((err, currLast) => {
-                if (err) {
+                if (!!err) {
                     logger.error(`Failed fetching last record ${err.toString()}`);
-                    return cb({
-                        error: err,
-                        data: newRecord,
-                        changed: false
-                    });
+                    return cb({ error: err });
                 }
 
-                if (isDataEqual(currLast, newRecord)) {
-                    // logger.debug('Nothing changed..');
-                    return cb({
-                        data: newRecord,
-                        changed: false
-                    });
+                if (!utils.isRecordNewer(currLast, newRecord)) {
+                    logger.debug('Nothing new received!');
+                    return cb({ changed: false });
                 }
 
                 try {
                     dbService.insertRecord(newRecord);
                     logger.info(`Exchange rates changed! Inserted new record ${JSON.stringify(newRecord)}`);
-                    return cb({
-                        data: newRecord,
-                        changed: true
-                    });
-                } catch (e) {
+                    return cb({ data: newRecord, changed: true });
+                }
+                catch (e) {
                     logger.error(`Failed inserting new record ${JSON.stringify(newRecord)}\nREASON: ${e.toString()}`);
-                    return cb({
-                        error: e,
-                        data: newRecord,
-                        changed: true
-                    });
+                    return cb({ error: e, data: newRecord, changed: true });
                 }
             });
         });

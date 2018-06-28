@@ -6,9 +6,10 @@
     "start": "node ./index"
   },
   "dependencies": {
+    "moment": "^2.22.2",
+    "mongodb": "^3.0.10",
     "node-html-parser": "^1.1.6",
-    "telegraf": "^3.21.2",
-    "mongodb": "^3.0.10"
+    "telegraf": "^3.21.2"
   },
   "devDependencies": {}
 }

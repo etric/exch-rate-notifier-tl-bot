@@ -32,7 +32,7 @@ let parseExchangeRates = (html) => {
     // logger.debug(rubSellTrend);
 
     return {
-        time: timestamp,
+        time: utils.parseTime(timestamp),
         usd: {
             sell: usdSell,
             sellTrend: usdSellTrend,

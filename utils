@@ -71,15 +71,18 @@ let isRecordsEqual = (oldObj, newObj) => {
     return true;
 };
 
+let parseTime = (timeField) =>
+    moment(timeField.slice(0, 5), 'HH:mm').valueOf();
+
 let isRecordNewer = (oldObj, newObj) => {
     if (!oldObj && !!newObj) return true;
 
-    let oldObjTime = moment(oldObj.time.slice(0, 5), 'HH:mm');
-    let newObjTime = moment(newObj.time.slice(0, 5), 'HH:mm');
+    let oldObjTime = moment(oldObj.time);
+    let newObjTime = moment(newObj.time);
 
     return newObjTime.isAfter(oldObjTime);
 };
 
 module.exports = {
-    renderResponse, startDummyServer, startScheduledJob, cleanUp, hasNoValues, isRecordNewer, isRecordsEqual
+    renderResponse, startDummyServer, startScheduledJob, cleanUp, hasNoValues, isRecordNewer, isRecordsEqual, parseTime
 };

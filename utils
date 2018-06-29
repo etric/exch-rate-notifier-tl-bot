@@ -53,23 +53,23 @@ let renderResponse = (data, err) => {
     return text;
 };
 
-let isValidRecord = (data) => {
+let hasNoValues = (data) => {
     let val1 = parseFloat(data.usd.sell);
     let val2 = parseFloat(data.usd.buy);
-    return !isNaN(val1) && !isNaN(val2);
+    return isNaN(val1) || isNaN(val2);
 };
 
-// let isRecordsEqual = (oldObj, newObj) => {
-//     if (!oldObj) return false;
-//     if (!newObj) return true;
-//
-//     if (oldObj.usd.sell !== newObj.usd.sell)
-//         return false;
-//     if (oldObj.usd.buy !== newObj.usd.buy)
-//         return false;
-//
-//     return true;
-// };
+let isRecordsEqual = (oldObj, newObj) => {
+    if (!oldObj) return false;
+    if (!newObj) return true;
+
+    if (oldObj.usd.sell !== newObj.usd.sell)
+        return false;
+    if (oldObj.usd.buy !== newObj.usd.buy)
+        return false;
+
+    return true;
+};
 
 let isRecordNewer = (oldObj, newObj) => {
     if (!oldObj && !!newObj) return true;
@@ -81,5 +81,5 @@ let isRecordNewer = (oldObj, newObj) => {
 };
 
 module.exports = {
-    renderResponse, startDummyServer, startScheduledJob, cleanUp, isValidRecord, isRecordNewer
+    renderResponse, startDummyServer, startScheduledJob, cleanUp, hasNoValues, isRecordNewer, isRecordsEqual
 };

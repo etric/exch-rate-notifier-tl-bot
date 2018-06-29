@@ -5,13 +5,18 @@ const logger = require('./logService');
 const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rates_tracker`;
+
 let dbObj;
 let dbCtrl;
 
 let checkDbReady = () => {
-    if (!dbObj) logger.warn('DB is not ready yet!');
+    if (!dbObj)
+        logger.warn('DB is not ready yet!');
     return !!dbObj;
 };
+
+let closeDb = (cb) =>
+    dbCtrl.close(cb);
 
 let insertRecord = (o) => {
     return !checkDbReady() || dbObj.collection('records').insertOne(o, (err) => {
@@ -28,8 +33,7 @@ let findLast = (cb) => {
     });
 };
 let saveUserChat = (chatId, cb) => {
-    if (!checkDbReady()) return;
-    return dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
+    return !checkDbReady() || dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
         if (itemsCount > 0) {
             let text = `Chat ${chatId} record already exists. Ignoring..`;
             logger.debug(text);
@@ -58,7 +62,7 @@ let getUserChats = (cb) => {
 };
 let removeUserChat = (chatId, cb) => {
     return !checkDbReady() || dbObj.collection('chats').remove({chatId}, (err) => {
-        if (err) {
+        if (!!err) {
             logger.error(`Failed removing chat ${chatId} record: ${err}`);
             return cb(`Chat ${chatId} is NOT un-subscribed from updates.`, false);
         } else {
@@ -67,8 +71,6 @@ let removeUserChat = (chatId, cb) => {
         }
     });
 };
-
-let closeDb = (cb) => dbCtrl.close(cb);
 
 module.exports = {
     checkDbReady, insertRecord, findLast, saveUserChat, getUserChats, removeUserChat, closeDb

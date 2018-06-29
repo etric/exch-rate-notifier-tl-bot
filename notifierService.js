@@ -49,8 +49,9 @@ let checkForUpdates = (cb) => {
         res.on('end', () => {
             let newRecord = parseExchangeRates(fullHtml);
 
-            if (!utils.isValidRecord(newRecord)) {
-                return cb({ error: `New Record ${JSON.stringify(newRecord)} is invalid` });
+            if (utils.hasNoValues(newRecord)) {
+                logger.debug('No exchange rates data. Skipping...');
+                return cb({ changed: false });
             }
 
             return dbService.findLast((err, currLast) => {
@@ -59,8 +60,13 @@ let checkForUpdates = (cb) => {
                     return cb({ error: err });
                 }
 
+                if (utils.isRecordsEqual(currLast, newRecord)) {
+                    logger.debug('Exchange rates haven\'t changed');
+                    return cb({ changed: false });
+                }
+
                 if (!utils.isRecordNewer(currLast, newRecord)) {
-                    logger.debug('Nothing new received!');
+                    logger.debug('Received stale data (probably from cache)');
                     return cb({ changed: false });
                 }
 

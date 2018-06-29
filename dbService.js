@@ -9,6 +9,8 @@ const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rate
 let dbObj;
 let dbCtrl;
 
+// TODO clean up 'records' collection regularly (every day, for example)
+
 mongoDb.MongoClient.connect(url, (err, _database) => {
     if (err) {
         return logger.error(err);

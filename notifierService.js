@@ -54,6 +54,7 @@ let checkForUpdates = (cb) => {
                 return cb({ changed: false });
             }
 
+            //TODO handle if db is empty
             return dbService.findLast((err, currLast) => {
                 if (!!err) {
                     logger.error(`Failed fetching last record ${err.toString()}`);

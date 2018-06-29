@@ -77,10 +77,7 @@ let parseTime = (timeField) =>
 let isRecordNewer = (oldObj, newObj) => {
     if (!oldObj && !!newObj) return true;
 
-    let oldObjTime = moment(oldObj.time);
-    let newObjTime = moment(newObj.time);
-
-    return newObjTime.isAfter(oldObjTime);
+    return newObj.time > oldObj.time;
 };
 
 module.exports = {

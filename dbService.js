@@ -9,10 +9,32 @@ const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rate
 let dbObj;
 let dbCtrl;
 
+mongoDb.MongoClient.connect(url, (err, _database) => {
+    if (err) {
+        return logger.error(err);
+    }
+    dbCtrl = _database;
+    dbObj = _database.db('exchange_rates_tracker');
+    logger.info('Connected to database "exchange_rates_tracker"');
+
+    dbObj.createCollection('records').then(() => {
+        logger.info('Collection "records" is ready');
+    });
+
+    dbObj.createCollection('chats').then(() => {
+        logger.info('Collection "chats" is ready');
+        dbObj.collection('chats').createIndex({"chatId": 1}, {unique: true}).then(() => {
+            logger.info('Created index for "chatId" field');
+        });
+    });
+});
+
 let checkDbReady = () => {
-    if (!dbObj)
+    if (!dbObj) {
         logger.warn('DB is not ready yet!');
-    return !!dbObj;
+        return false;
+    }
+    return true;
 };
 
 let closeDb = (cb) =>
@@ -60,6 +82,7 @@ let getUserChats = (cb) => {
         return cb(ids);
     });
 };
+
 let removeUserChat = (chatId, cb) => {
     return !checkDbReady() || dbObj.collection('chats').remove({chatId}, (err) => {
         if (!!err) {
@@ -75,23 +98,3 @@ let removeUserChat = (chatId, cb) => {
 module.exports = {
     checkDbReady, insertRecord, findLast, saveUserChat, getUserChats, removeUserChat, closeDb
 };
-
-mongoDb.MongoClient.connect(url, (err, _database) => {
-    if (err) {
-        return logger.error(err);
-    }
-    dbCtrl = _database;
-    dbObj = _database.db('exchange_rates_tracker');
-    logger.info('Connected to database "exchange_rates_tracker"');
-
-    dbObj.createCollection('records').then(() => {
-        logger.info('Collection "records" is ready');
-    });
-
-    dbObj.createCollection('chats').then(() => {
-        logger.info('Collection "chats" is ready');
-        dbObj.collection('chats').createIndex({"chatId": 1}, {unique: true}).then(() => {
-            logger.info('Created index for "chatId" field');
-        });
-    });
-});

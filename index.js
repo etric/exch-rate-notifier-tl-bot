@@ -6,15 +6,11 @@ const Extra = require("telegraf/extra");
 const Telegraf = require('telegraf');
 const notifierService = require('./notifierService');
 const dbService = require('./dbService');
-const logger = require('./logService');
 const utils = require('./utils');
 
 
 let doJob = () => {
-    if (!dbService.checkDbReady()) {
-        return logger.warn("DB is not initialized yet");
-    }
-    return notifierService.checkForUpdates(result => {
+    return !dbService.checkDbReady() || notifierService.checkForUpdates(result => {
         if (!result.changed) {
             return;
         }
@@ -50,8 +46,8 @@ bot.hears('Last exchange rates', ctx =>
 
 bot.startPolling();
 
-utils.startDummyServer();
 process.on('SIGINT', utils.cleanUp);
 process.on('SIGTERM', utils.cleanUp);
 
+utils.startDummyServer();
 utils.startScheduledJob(doJob);

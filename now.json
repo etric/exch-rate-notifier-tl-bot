@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "public": true,
+  "env": {
+    "BOT_TOKEN": "@bot_token",
+    "DB_USER": "@db_user",
+    "DB_PASS": "@db_pass",
+    "POLL_FREQ_SECS": "60"
+  }
+}

@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config();
+
 const mongoDb = require('mongodb');
 const logger = require('./logService');
 const dbUser = process.env.DB_USER;

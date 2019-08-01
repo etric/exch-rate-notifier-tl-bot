@@ -1,38 +1,23 @@
 'use strict';
 
-const parse = require('node-html-parser').parse;
+const cheerio = require('cheerio');
 const https = require('https');
 const dbService = require('./dbService');
 const logger = require('./logService');
 const utils = require('./utils');
 
 let parseExchangeRates = (html) => {
-    const root = parse(html);
-    let subRoot = root.querySelector('.b-table-currency');
-    let title = subRoot.querySelector('h2 a').text;
-    let timestamp = subRoot.querySelector('.timestamp').text;
-    let data = subRoot.querySelectorAll("#table-currency-tab0 tr td").map(e => e.text);
-    let trend = subRoot.querySelectorAll("#table-currency-tab0 tr i").map(e => e.classNames[0]);
+    const $ = cheerio.load(html);
+    let usdMiniaylo = $('a[data-gtm-ea="miniaylo-usd-button"] .fua-xrates__index');
 
-    let [usdCurr, usdBuy, usdSell, eurCurr, eurBuy, eurSell, rubCurr, rubBuy, rubSell] = data;
-    let [usdBuyTrend, usdSellTrend, eurBuyTrend, eurSellTrend, rubBuyTrend, rubSellTrend] = trend;
+    let usdBuy = $(usdMiniaylo[0]).text();
+    let usdBuyTrend = $(usdMiniaylo[0]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
 
-    // logger.debug(title);
-    // logger.debug(timestamp);
-    // logger.debug(time);
-    // logger.debug(usdCurr);
-    // logger.debug(usdBuy);
-    // logger.debug(usdSell);
-
-    // logger.debug(usdBuyTrend);
-    // logger.debug(usdSellTrend);
-    // logger.debug(eurBuyTrend);
-    // logger.debug(eurSellTrend);
-    // logger.debug(rubBuyTrend);
-    // logger.debug(rubSellTrend);
+    let usdSell = $(usdMiniaylo[1]).text();
+    let usdSellTrend = $(usdMiniaylo[1]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
 
     return {
-        time: utils.parseTime(timestamp),
+        time: new Date(),
         usd: {
             sell: usdSell,
             sellTrend: usdSellTrend,
@@ -43,12 +28,11 @@ let parseExchangeRates = (html) => {
 };
 
 let checkForUpdates = (cb) => {
-    return https.get('https://finance.ua/ru/', (res) => {
+    return https.get('https://finance.ua/', (res) => {
         let fullHtml = '';
         res.on('data', data => fullHtml += data.toString());
         res.on('end', () => {
             let newRecord = parseExchangeRates(fullHtml);
-
             if (utils.hasNoValues(newRecord)) {
                 logger.debug('No exchange rates data. Skipping...');
                 return cb({ changed: false });

@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config();
+
 const Markup = require("telegraf/markup");
 const Extra = require("telegraf/extra");
 

@@ -1,5 +1,6 @@
 'use strict';
 
+require('dotenv').config();
 const http = require('http');
 const os = require('os');
 const logger = require('./logService');
@@ -41,6 +42,10 @@ let startScheduledJob = (job) => {
 let renderResponse = (data, err) => {
     if (!!err) {
         return `<b>ERROR:</b> ${err.toString()}`;
+    }
+
+    if (!data) {
+        return `No data yet... wait until next update`;
     }
 
     let usdSellTrend = trendSign(data.usd.sellTrend);

@@ -9,6 +9,7 @@ const Telegraf = require('telegraf');
 const notifierService = require('./notifierService');
 const dbService = require('./dbService');
 const utils = require('./utils');
+const logger = require('./logService');
 
 
 let doJob = () => {
@@ -18,9 +19,17 @@ let doJob = () => {
         }
         return dbService.getUserChats(chats => chats.forEach(chatId => {
             if (!!result.error) {
-                return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error);
+                try {
+                    return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error);
+                } catch (e1) {
+                    logger.error("Failed sending message: " + e1);
+                }
             }
-            return bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'});
+            try {
+                return bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'});
+            } catch (e2) {
+                logger.error("Failed sending message: " + e2);
+            }
         }));
     })
 };

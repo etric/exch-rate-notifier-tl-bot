@@ -20,14 +20,10 @@ let doJob = () => {
         return dbService.getUserChats(chats => chats.forEach(chatId => {
             if (!!result.error) {
                 return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error)
-                    .catch(error => {
-                        logger.error("Failed sending message: " + error);
-                    });
+                    .catch(error => logger.error("Failed sending message: " + error));
             }
             return bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'})
-                .catch(error => {
-                    logger.error("Failed sending message: " + error);
-                });
+                .catch(error => logger.error("Failed sending message: " + error));
         }));
     })
 };
@@ -39,19 +35,23 @@ let kbMenu = () =>
 
 bot.start(ctx =>
     ctx.replyWithHTML('<b>WELCOME</b>\nMake your choice if you are not subscribed yet', Extra.markup(kbMenu))
+        .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))
 );
 
 bot.hears('Subscribe', ctx =>
-    dbService.saveUserChat(ctx.chat.id, (inserted, text) => ctx.reply(text, Extra.markup(kbMenu)))
-);
+    dbService.saveUserChat(ctx.chat.id, (inserted, text) =>
+        ctx.reply(text, Extra.markup(kbMenu))
+            .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))));
 
 bot.hears('Unsubscribe', ctx =>
-    dbService.removeUserChat(ctx.chat.id, (text, err) => ctx.reply(text, Extra.markup(kbMenu)))
-);
+    dbService.removeUserChat(ctx.chat.id, (text, err) =>
+        ctx.reply(text, Extra.markup(kbMenu))
+            .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))));
 
 bot.hears('Last exchange rates', ctx =>
-    dbService.findLast((err, last) => ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu)))
-);
+    dbService.findLast((err, last) =>
+        ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu))
+            .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))));
 
 bot.startPolling();
 

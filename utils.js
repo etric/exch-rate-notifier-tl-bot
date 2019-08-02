@@ -6,14 +6,13 @@ const os = require('os');
 const logger = require('./logService');
 const dbService = require('./dbService');
 const moment = require('moment');
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8888;
 
 let startDummyServer = () => {
-    logger.info('Starting http server on port 8888');
     http.createServer((req, res) => {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end('Hello World!');
-    }).listen(PORT, () => console.log(`Listening on ${ PORT }`));
+    }).listen(PORT, () => logger.info(`Starting http server on port ${ PORT }`));
 };
 
 let trendSign = val =>

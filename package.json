@@ -2,10 +2,6 @@
   "name": "exch-rate-notifier-tl-bot",
   "version": "1.1.0",
   "private": true,
-  "scripts": {
-    "build": "rm -rf public && mkdir public && echo 'Custom Build' > ./public/index.html",
-    "start": "node ./index"
-  },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.0.0",

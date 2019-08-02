@@ -6,7 +6,7 @@ const os = require('os');
 const logger = require('./logService');
 const dbService = require('./dbService');
 const moment = require('moment');
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.PORT || 5000;
 
 let startDummyServer = () => {
     http.createServer((req, res) => {

@@ -29,13 +29,12 @@ let cleanUp = () => {
     dbService.closeDb(() => process.exit(0));
 };
 
-let startScheduledJob = (job) => {
-    const POLL_FREQ_SECS = process.env.POLL_FREQ_SECS;
-    logger.info(`Data source POLL frequency is ${POLL_FREQ_SECS} seconds`);
+let startScheduledJob = (job, jobName, timeoutSec) => {
+    logger.info(`Job [${jobName}] scheduled with timeout ${timeoutSec} seconds`);
 
     (function runScheduledJob() {
         job();
-        setTimeout(runScheduledJob, POLL_FREQ_SECS * 1000);
+        setTimeout(runScheduledJob, timeoutSec * 1000);
     })();
 };
 

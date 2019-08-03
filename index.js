@@ -10,6 +10,7 @@ const notifierService = require('./notifierService');
 const dbService = require('./dbService');
 const utils = require('./utils');
 const logger = require('./logService');
+const https = require('https');
 
 
 let doJob = () => {
@@ -59,4 +60,8 @@ process.on('SIGINT', utils.cleanUp);
 process.on('SIGTERM', utils.cleanUp);
 
 utils.startDummyServer();
-utils.startScheduledJob(doJob);
+utils.startScheduledJob(doJob, 'CHECK UPDATES', process.env.POLL_FREQ_SECS);
+
+//TODO TEMP WORKAROUND!!!
+//to prevent app from idling
+utils.startScheduledJob(() => https.get('https://exch-rate-notifier-tl-bot.herokuapp.com/'), 'PREVENT FROM IDLING', 30 * 60);

@@ -50,7 +50,7 @@ let renderResponse = (data, err) => {
     let usdSellTrend = trendSign(data.usd.sellTrend);
     let usdBuyTrend = trendSign(data.usd.buyTrend);
 
-    let text = `${moment(data.time).calendar()} \n`;
+    let text = `${moment(data.time).tz('Europe/Kiev').calendar()} \n`;
     text += `             <b>BUY</b>             <b>SELL</b> \n`;
     text += `<b>USD</b>    ${data.usd.buy + usdBuyTrend}   ${data.usd.sell + usdSellTrend}`;
     // text += `\n\n<i>DEBUG INFO:\n${osInfo()}</i>`;
@@ -69,8 +69,8 @@ let isRecordsEqual = (oldObj, newObj) => {
 
     if (oldObj.usd.sell !== newObj.usd.sell)
         return false;
-    if (oldObj.usd.buy !== newObj.usd.buy)
-        return false;
+    // if (oldObj.usd.buy !== newObj.usd.buy)
+    //     return false;
 
     return true;
 };

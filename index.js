@@ -61,7 +61,3 @@ process.on('SIGTERM', utils.cleanUp);
 
 utils.startDummyServer();
 utils.startScheduledJob(doJob, 'CHECK UPDATES', process.env.POLL_FREQ_SECS);
-
-//TODO TEMP WORKAROUND!!!
-//to prevent app from idling
-utils.startScheduledJob(() => https.get('https://exch-rate-notifier-tl-bot.herokuapp.com/'), 'PREVENT FROM IDLING', 30 * 60);

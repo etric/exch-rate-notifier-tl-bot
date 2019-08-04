@@ -5,7 +5,7 @@ const http = require('http');
 const os = require('os');
 const logger = require('./logService');
 const dbService = require('./dbService');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const PORT = process.env.PORT || 5000;
 
 let startDummyServer = () => {
@@ -18,11 +18,11 @@ let startDummyServer = () => {
 let trendSign = val =>
     (val === 'up') ? '&#9650;' : '&#9660;';
 
-let osInfo = () =>
-    'hostname = ' + os.hostname() +
-    '; arch = ' + os.arch() +
-    '; platform = ' + os.platform() +
-    '; userInfo = ' + JSON.stringify(os.userInfo());
+// let osInfo = () =>
+//     'hostname = ' + os.hostname() +
+//     '; arch = ' + os.arch() +
+//     '; platform = ' + os.platform() +
+//     '; userInfo = ' + JSON.stringify(os.userInfo());
 
 let cleanUp = () => {
     logger.info("Closing DB connection");

@@ -10,7 +10,6 @@ const notifierService = require('./notifierService');
 const dbService = require('./dbService');
 const utils = require('./utils');
 const logger = require('./logService');
-const https = require('https');
 
 
 let doJob = () => {

@@ -47,12 +47,10 @@ let renderResponse = (data, err) => {
         return `No data yet... wait until next update`;
     }
 
-    let usdSellTrend = trendSign(data.usd.sellTrend);
-    let usdBuyTrend = trendSign(data.usd.buyTrend);
+    // let usdSellTrend = trendSign(data.usd.sellTrend);
+    // let usdBuyTrend = trendSign(data.usd.buyTrend);
 
-    let text = `${moment(data.time).tz('Europe/Kiev').calendar()} \n`;
-    text += `             <b>BUY</b>             <b>SELL</b> \n`;
-    text += `<b>USD</b>    ${data.usd.buy + usdBuyTrend}   ${data.usd.sell + usdSellTrend}`;
+    let text = `<b>${data.usd.sell + trendSign(data.usd.sellTrend)}</b>   USD/SELL   ${moment(data.time).tz('Europe/Kiev').format('LT')}`;
     // text += `\n\n<i>DEBUG INFO:\n${osInfo()}</i>`;
     return text;
 };

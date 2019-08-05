@@ -11,6 +11,8 @@ const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rate
 let dbObj;
 let dbCtrl;
 
+let cachedLastExchRate;
+
 // TODO clean up 'records' collection regularly (every day, for example)
 
 mongoDb.MongoClient.connect(url, (err, _database) => {
@@ -45,6 +47,7 @@ let closeDb = (cb) =>
     dbCtrl.close(cb);
 
 let insertRecord = (o) => {
+    cachedLastExchRate = o;
     return !checkDbReady() || dbObj.collection('records').insertOne(o, (err) => {
         if (err) {
             logger.error(`Failed inserting new data ${JSON.stringify(o)}: ${err}`);
@@ -54,6 +57,9 @@ let insertRecord = (o) => {
     });
 };
 let findLast = (cb) => {
+    if (cachedLastExchRate) {
+        return cb(null, cachedLastExchRate);
+    }
     return !checkDbReady() || dbObj.collection('records').find().sort({'_id': -1}).limit(1).toArray((err, arr) => {
         return cb(err, arr[0]);
     });

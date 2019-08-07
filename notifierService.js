@@ -10,10 +10,10 @@ let parseExchangeRates = (html) => {
     const $ = cheerio.load(html);
     let usdMiniaylo = $('a[data-gtm-ea="miniaylo-usd-button"] .fua-xrates__index');
 
-    let usdBuy = $(usdMiniaylo[0]).text();
+    let usdBuy = $(usdMiniaylo[0]).text().slice(0, -2);
     let usdBuyTrend = $(usdMiniaylo[0]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
 
-    let usdSell = $(usdMiniaylo[1]).text();
+    let usdSell = $(usdMiniaylo[1]).text().slice(0, -2);
     let usdSellTrend = $(usdMiniaylo[1]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
 
     return {

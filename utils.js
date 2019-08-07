@@ -65,7 +65,7 @@ let isRecordsEqual = (oldObj, newObj) => {
     if (!oldObj) return false;
     if (!newObj) return true;
 
-    if (oldObj.usd.sell.slice(0, -2) !== newObj.usd.sell.slice(0, -2))
+    if (oldObj.usd.sell !== newObj.usd.sell)
         return false;
     // if (oldObj.usd.buy !== newObj.usd.buy)
     //     return false;

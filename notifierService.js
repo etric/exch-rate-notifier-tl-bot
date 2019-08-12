@@ -17,7 +17,7 @@ let parseExchangeRates = (html) => {
     let usdSellTrend = $(usdMiniaylo[1]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
 
     return {
-        time: new Date(),
+        time: new Date().getTime(),
         usd: {
             sell: usdSell,
             sellTrend: usdSellTrend,

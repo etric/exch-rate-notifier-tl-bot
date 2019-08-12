@@ -64,6 +64,11 @@ let findLast = (cb) => {
         return cb(err, arr[0]);
     });
 };
+
+let getTodayRecords = (cb) => {
+    //TODO
+};
+
 let saveUserChat = (chatId, cb) => {
     return !checkDbReady() || dbObj.collection('chats').find({chatId}).count().then(itemsCount => {
         if (itemsCount > 0) {

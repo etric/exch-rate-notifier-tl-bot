@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1",
     "start": "node ./index.js",
     "build": "npm install"
   },

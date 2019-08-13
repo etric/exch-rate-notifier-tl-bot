@@ -13,6 +13,10 @@ const logger = require('./logService');
 const chartService = require('./chartService');
 
 let renderedChart;
+dbService.getTodayRecords((err, records) =>
+    chartService.renderChart(records, (chart) => {
+        renderedChart = chart;
+    }));
 
 let broadcastUpdate = (result,) => {
     dbService.getUserChats(chats => chats.forEach(chatId => {

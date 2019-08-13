@@ -12,7 +12,7 @@ const utils = require('./utils');
 const logger = require('./logService');
 const chartService = require('./chartService');
 
-let renderedChart;
+let renderedChart; //cached
 
 let broadcastUpdate = (result,) => {
     dbService.getUserChats(chats => chats.forEach(chatId => {

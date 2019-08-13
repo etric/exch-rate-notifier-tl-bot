@@ -15,7 +15,7 @@ let cachedLastExchRate;
 
 // TODO clean up 'records' collection regularly (every day, for example)
 
-mongoDb.MongoClient.connect(url, (err, _database) => {
+mongoDb.MongoClient.connect(url, { useNewUrlParser: true }, (err, _database) => {
     if (err) {
         return logger.error(err);
     }
@@ -66,7 +66,24 @@ let findLast = (cb) => {
 };
 
 let getTodayRecords = (cb) => {
-    //TODO
+    let date = new Date();
+
+    date.setHours(0,0,0,0);
+    let startOfDay = date.getTime();
+
+    date.setHours(23,59,59,999);
+    let endOfDay = date.getTime();
+
+    let searchCriteria = {
+        "time": {
+            "$gte": startOfDay,
+            "$lte": endOfDay
+        }
+    };
+
+    return !checkDbReady() || dbObj.collection('records').find(searchCriteria).sort({'time': 1}).toArray((err, arr) => {
+        return cb(err, arr);
+    });
 };
 
 let saveUserChat = (chatId, cb) => {
@@ -111,5 +128,5 @@ let removeUserChat = (chatId, cb) => {
 };
 
 module.exports = {
-    checkDbReady, insertRecord, findLast, saveUserChat, getUserChats, removeUserChat, closeDb
+    checkDbReady, insertRecord, findLast, getTodayRecords, saveUserChat, getUserChats, removeUserChat, closeDb
 };

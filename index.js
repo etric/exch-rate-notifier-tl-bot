@@ -10,22 +10,38 @@ const notifierService = require('./notifierService');
 const dbService = require('./dbService');
 const utils = require('./utils');
 const logger = require('./logService');
+const chartService = require('./chartService');
 
+let renderedChart;
+
+let broadcastUpdate = (result,) => {
+    dbService.getUserChats(chats => chats.forEach(chatId => {
+        if (!!result.error) {
+            return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error)
+                .catch(error => logger.error("Failed sending message: " + error));
+        }
+        if (renderedChart) {
+            bot.telegram.sendPhoto(chatId, {source: renderedChart}).then(() =>
+                bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'})
+                    .catch(error => logger.error("Failed sending message: " + error)));
+        } else {
+            bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'})
+                .catch(error => logger.error("Failed sending message: " + error));
+        }
+    }));
+};
 
 let doJob = () => {
     return !dbService.checkDbReady() || notifierService.checkForUpdates(result => {
         if (!result.changed) {
             return;
         }
-        return dbService.getUserChats(chats => chats.forEach(chatId => {
-            if (!!result.error) {
-                return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error)
-                    .catch(error => logger.error("Failed sending message: " + error));
-            }
-            return bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'})
-                .catch(error => logger.error("Failed sending message: " + error));
-        }));
-    })
+        dbService.getTodayRecords((err, records) =>
+            chartService.renderChart(records, (chart) => {
+                renderedChart = chart;
+                broadcastUpdate(result);
+            }));
+    });
 };
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -49,9 +65,16 @@ bot.hears('Unsubscribe', ctx =>
             .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))));
 
 bot.hears('Last exchange rates', ctx =>
-    dbService.findLast((err, last) =>
-        ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu))
-            .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`))));
+    dbService.findLast((err, last) => {
+        if (renderedChart) {
+            bot.telegram.sendPhoto(ctx.chat.id, {source: renderedChart}).then(() =>
+                ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu))
+                    .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`)));
+        } else {
+            ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu))
+                .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`));
+        }
+    }));
 
 bot.startPolling();
 

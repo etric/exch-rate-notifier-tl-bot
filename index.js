@@ -12,7 +12,7 @@ const utils = require('./utils');
 const logger = require('./logService');
 const chartService = require('./chartService');
 
-let renderedChart; //cached
+let chartUrl;
 
 let broadcastUpdate = (result,) => {
     dbService.getUserChats(chats => chats.forEach(chatId => {
@@ -20,8 +20,8 @@ let broadcastUpdate = (result,) => {
             return bot.telegram.sendMessage(chatId, 'ERROR: ' + result.error)
                 .catch(error => logger.error("Failed sending message: " + error));
         }
-        if (renderedChart) {
-            bot.telegram.sendPhoto(chatId, {source: renderedChart}).then(() =>
+        if (chartUrl) {
+            bot.telegram.sendPhoto(chatId, chartUrl).then(() =>
                 bot.telegram.sendMessage(chatId, utils.renderResponse(result.data), {parse_mode: 'HTML'})
                     .catch(error => logger.error("Failed sending message: " + error)));
         } else {
@@ -38,7 +38,7 @@ let doJob = () => {
         }
         dbService.getTodayRecords((err, records) =>
             chartService.renderChart(records, (chart) => {
-                renderedChart = chart;
+                chartUrl = chart;
                 broadcastUpdate(result);
             }));
     });
@@ -66,8 +66,8 @@ bot.hears('Unsubscribe', ctx =>
 
 bot.hears('Last exchange rates', ctx =>
     dbService.findLast((err, last) => {
-        if (renderedChart) {
-            bot.telegram.sendPhoto(ctx.chat.id, {source: renderedChart}).then(() =>
+        if (chartUrl) {
+            bot.telegram.sendPhoto(ctx.chat.id, chartUrl).then(() =>
                 ctx.replyWithHTML(utils.renderResponse(last, err), Extra.markup(kbMenu))
                     .catch(error => logger.error(`Failed replying to ${ctx.chat.id}: ${error}`)));
         } else {

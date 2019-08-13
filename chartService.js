@@ -1,58 +1,30 @@
 'use strict';
 
-const node_echarts = require('node-echarts');
-const logger = require('./logService');
 const moment = require('moment-timezone');
 
 let renderChart = (records, cb) => {
-    let minRate = +999999, maxRate = -1;
-    let normalizedData = records.map(x => {
+    let rates = [], times = [], minRate = +999999, maxRate = -1, i = 0;
+    records.forEach(x => {
         let rate = +x['usd']['sell'];
-        if (rate < minRate) {
-            minRate = rate;
+        minRate = Math.min(rate, minRate);
+        maxRate = Math.max(rate, maxRate);
+        rates.push(rate);
+        if (i++ % 5 === 0) {
+            times.push(moment(x['time']).tz('Europe/Kiev').format('HH:mm'));
+        } else {
+            times.push('');
         }
-        if (rate > maxRate) {
-            maxRate = rate;
-        }
-        return {
-            value: [x['time'], rate]
-        };
     });
 
-    let option = {
-        calculable : true,
-        xAxis: {
-            type: 'time',
-            axisLabel: {
-                formatter: (function(value){
-                    return moment(value).tz('Europe/Kiev').format('HH:mm');
-                }),
-                boundaryGap: false
-            },
-            // data: times
-        },
-        yAxis: {
-            type: 'value',
-            min: minRate - 0.1,
-            max: maxRate + 0.1,
-        },
-        series: [{
-            data: normalizedData,
-            type: 'line',
-            // smooth: true,
-            // hoverAnimation: false,
-            showSymbol: false
-        }]
-    };
+    let loBoundary = minRate - 0.2;
+    loBoundary = loBoundary.toFixed(2);
+    let hiBoundary = maxRate + 0.2;
+    hiBoundary = hiBoundary.toFixed(2);
 
-    const config = {
-        width: 500, // Image width, type is number.
-        height: 500, // Image height, type is number.
-        option, // Echarts configuration, type is Object.
-        enableAutoDispose: true  //Enable auto-dispose echarts after the image is created.
-    };
+    let url = "https://image-charts.com/chart?chs=700x200&chd=a:" + rates.join(",")
+        + "&cht=lc&chxl=0:|" + times.join("|") + "&chxt=x,y&chxr=1," + loBoundary + "," + hiBoundary + "&chls=3.0";
 
-    cb(node_echarts(config), null);
+    cb(url, null);
 };
 
 module.exports = {

@@ -3,7 +3,6 @@
   "version": "1.1.0",
   "private": true,
   "scripts": {
-    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1",
     "start": "node ./index.js",
     "build": "npm install"
   },
@@ -11,10 +10,10 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.0.0",
-    "highcharts-export-server": "^2.0.24",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
     "mongodb": "^3.0.10",
+    "node-echarts": "^1.1.4",
     "telegraf": "^3.32.0"
   },
   "devDependencies": {}

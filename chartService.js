@@ -1,77 +1,58 @@
 'use strict';
 
+const node_echarts = require('node-echarts');
+const logger = require('./logService');
 const moment = require('moment-timezone');
-const chartExporter = require("highcharts-export-server");
-chartExporter.initPool();
-
-const zone = moment.tz.zone('Europe/Kiev');
-
-const chartDetails = (chartData) => {
-    return {
-        type: "png",
-        options: {
-            chart: {
-                type: "area",
-            },
-            time: {
-                timezoneOffset: zone.parse(new Date())
-            },
-            title: {
-                text: ''
-            },
-            xAxis: {
-                type: 'datetime',
-            },
-            yAxis: {
-                title: {
-                    text: ''
-                }
-                // tickInterval: 0.1,
-                // showFirstLabel: true,
-                // showLastLabel: true,
-            },
-            legend: {
-                enabled: false
-            },
-            plotOptions: {
-                area: {
-                    fillColor: {
-                        linearGradient: {x1: 0, y1: 0, x2: 0, y2: 1},
-                        stops: [[0, '#2f7ed8'], [1, '#77a1e5']]
-                    },
-                    lineWidth: 1,
-                    threshold: null
-                }
-            },
-            series: [{
-                type: 'area',
-                name: '',
-                data: chartData
-            }]
-        }
-    }
-};
 
 let renderChart = (records, cb) => {
+    let minRate = +999999, maxRate = -1;
     let normalizedData = records.map(x => {
-        return [x['time'], +x['usd']['sell']];
-    });
-    chartExporter.export(chartDetails(normalizedData), (err, res) => {
-        if (err) {
-            console.log("ERROR during chart rendering: " + err);
+        let rate = +x['usd']['sell'];
+        if (rate < minRate) {
+            minRate = rate;
         }
-        cb(Buffer.from(res.data, 'base64'), err);
-        // // Get the image data (base64)
-        // let imageb64 = res.data;
-        // // Filename of the output
-        // let outputFile = "bar.png";
-        // // Save the image to file
-        // fs.writeFileSync(outputFile, imageb64, "base64", function(err) {
-        //     if (err) console.log(err);
-        // });
-        // console.log("Saved image!");
-        // // chartExporter.killPool();
+        if (rate > maxRate) {
+            maxRate = rate;
+        }
+        return {
+            value: [x['time'], rate]
+        };
     });
+
+    let option = {
+        calculable : true,
+        xAxis: {
+            type: 'time',
+            axisLabel: {
+                formatter: (function(value){
+                    return moment(value).tz('Europe/Kiev').format('HH:mm');
+                }),
+                boundaryGap: false
+            },
+            // data: times
+        },
+        yAxis: {
+            type: 'value',
+            min: minRate - 0.1,
+            max: maxRate + 0.1,
+        },
+        series: [{
+            data: normalizedData,
+            type: 'line',
+            // smooth: true,
+            // hoverAnimation: false,
+            showSymbol: false
+        }]
+    };
+
+    const config = {
+        width: 500, // Image width, type is number.
+        height: 500, // Image height, type is number.
+        option, // Echarts configuration, type is Object.
+        enableAutoDispose: true  //Enable auto-dispose echarts after the image is created.
+    };
+
+    cb(node_echarts(config), null);
 };
 
 module.exports = {

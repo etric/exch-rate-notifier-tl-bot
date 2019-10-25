@@ -8,24 +8,27 @@ const utils = require('./utils');
 
 let parseExchangeRates = (html) => {
     const $ = cheerio.load(html);
-    let usdMiniaylo = $('a[data-gtm-ea="miniaylo-usd-button"] .fua-xrates__index');
+    let usdMiniayloData = $('a[data-gtm-ea="miniaylo-$-button"] .fua-xrates__value');
 
-    let usdBuy = $(usdMiniaylo[0]).text().slice(0, -2);
-    let usdBuyTrend = $(usdMiniaylo[0]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
+    let usdBuyNode = $(usdMiniayloData[0]);
+    let usdBuyValue = usdBuyNode.contents().get(0).nodeValue.trim();
+    let usdBuyTrend = usdBuyNode.find('.fua-xrates__progress').hasClass('fua-down') ? 'down' : 'up';
 
-    let usdSell = $(usdMiniaylo[1]).text().slice(0, -2);
-    let usdSellTrend = $(usdMiniaylo[1]).find('.fua-xrates__progress svg').hasClass("fua-arrow__down") ? 'down' : 'up';
+    let usdSellNode = $(usdMiniayloData[1]);
+    let usdSellValue = usdSellNode.contents().get(0).nodeValue.trim();
+    let usdSellTrend = usdSellNode.find('.fua-xrates__progress').hasClass('fua-down') ? 'down' : 'up';
 
     return {
-        time: new Date().getTime(),
+        time: new Date(),
         usd: {
-            sell: usdSell,
+            sell: usdSellValue,
             sellTrend: usdSellTrend,
-            buy: usdBuy,
+            buy: usdBuyValue,
             buyTrend: usdBuyTrend
         }
     };
 };
+
 
 let checkForUpdates = (cb) => {
     return https.get('https://finance.ua/', (res) => {

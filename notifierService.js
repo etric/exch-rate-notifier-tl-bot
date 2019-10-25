@@ -19,7 +19,7 @@ let parseExchangeRates = (html) => {
     let usdSellTrend = usdSellNode.find('.fua-xrates__progress').hasClass('fua-down') ? 'down' : 'up';
 
     return {
-        time: new Date(),
+        time: new Date().getTime(),
         usd: {
             sell: usdSellValue,
             sellTrend: usdSellTrend,

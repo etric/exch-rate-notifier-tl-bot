@@ -13,7 +13,6 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
     "mongodb": "^3.0.10",
-    "node-echarts": "^1.1.4",
     "telegraf": "^3.32.0"
   },
   "devDependencies": {}

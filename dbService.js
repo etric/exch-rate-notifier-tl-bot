@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const mongoDb = require('mongodb');
+const MongoClient = require("mongodb").MongoClient;
 const logger = require('./logService');
 const url = process.env.DB_URL;
 
@@ -13,24 +13,41 @@ let cachedLastExchRate;
 
 // TODO clean up 'records' collection regularly (every day, for example)
 
-mongoDb.MongoClient.connect(url, { useNewUrlParser: true }, (err, _database) => {
+const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
+
+mongoClient.connect( async (err, _database) => {
     if (err) {
         return logger.error(err);
     }
     dbCtrl = _database;
-    dbObj = _database.db('exchange_rates_tracker');
-    logger.info('Connected to database "exchange_rates_tracker"');
+    let localDbObj = _database.db('myFirstDatabase');
+    logger.info('Connected to database "myFirstDatabase"');
 
-    dbObj.createCollection('records').then(() => {
-        logger.info('Collection "records" is ready');
-    });
+    const collections = await localDbObj.listCollections({}, { nameOnly: true }).map(item => item['name']).toArray();
+    logger.info('Collections: ' + JSON.stringify(collections));
 
-    dbObj.createCollection('chats').then(() => {
-        logger.info('Collection "chats" is ready');
-        dbObj.collection('chats').createIndex({"chatId": 1}, {unique: true}).then(() => {
-            logger.info('Created index for "chatId" field');
+    if (!collections.includes('records')) {
+        logger.info('Creating "records" collection');
+        localDbObj.createCollection('records').then(() => {
+            logger.info('Collection "records" is ready');
         });
-    });
+    } else {
+        logger.info('Collection "records" is ready');
+    }
+
+    if (!collections.includes('chats')) {
+        logger.info('Creating "chats" collection');
+        localDbObj.createCollection('chats').then(() => {
+            logger.info('Collection "chats" is ready');
+            localDbObj.collection('chats').createIndex({"chatId": 1}, {unique: true}).then(() => {
+                logger.info('Created index for "chatId" field');
+            });
+        });
+    } else {
+        logger.info('Collection "chats" is ready');
+    }
+
+    dbObj = localDbObj;
 });
 
 let checkDbReady = () => {

@@ -12,7 +12,7 @@
     "dotenv": "^8.0.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
-    "mongodb": "^3.0.10",
+    "mongodb": "^3.3.3",
     "telegraf": "^3.32.0"
   },
   "devDependencies": {}

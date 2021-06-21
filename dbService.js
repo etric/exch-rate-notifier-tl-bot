@@ -12,6 +12,7 @@ let dbCtrl;
 let cachedLastExchRate;
 
 // TODO clean up 'records' collection regularly (every day, for example)
+// TODO clean up code
 
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
 

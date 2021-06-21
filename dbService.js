@@ -4,9 +4,7 @@ require('dotenv').config();
 
 const mongoDb = require('mongodb');
 const logger = require('./logService');
-const dbUser = process.env.DB_USER;
-const dbPass = process.env.DB_PASS;
-const url = `mongodb://${dbUser}:${dbPass}@ds161700.mlab.com:61700/exchange_rates_tracker`;
+const url = process.env.DB_URL;
 
 let dbObj;
 let dbCtrl;
